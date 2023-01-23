@@ -1,0 +1,250 @@
+USE [GSWSA_Inventory_Project]
+GO
+
+/****** Object:  Table [dbo].[InventoryMaster]    Script Date: 10/24/2020 2:54:13 AM ******/
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryMaster(
+	ItemNum char(8) NOT NULL PRIMARY KEY,
+	ItemDescription char(30) NOT NULL,
+	GroupNum int NOT NULL,
+	ClassNum int NOT NULL,
+	AverageCost decimal(9, 4) NOT NULL,
+	LastTrueCost decimal(9, 4) NOT NULL,
+	EOQFormula int NOT NULL,
+	VendorNum int NOT NULL,
+	MinBalance decimal(9, 2) NOT NULL,
+	MaxBalance decimal(9, 2) NOT NULL,
+	StandardOrderQty decimal(9, 2) NOT NULL,
+	FiscalIssued decimal(9, 2) NOT NULL,
+	OnHandQty decimal(9, 2) NOT NULL,
+	OnOrderQty decimal(9, 2) NOT NULL,
+	QtyBookedGL decimal(9, 2) NOT NULL,
+	YTDUsage decimal(9, 2) NOT NULL,
+	YTDRecieved decimal(9, 2) NOT NULL,
+	YTDCost decimal(11, 2) NOT NULL,
+	PO decimal(7, 0) NOT NULL,
+	DateLastActivity date NOT NULL,
+	MonthUsage decimal(9, 2) NOT NULL,
+);
+
+/****** Object:  Table [dbo].[IInventoryWarehouseMaster]    Script Date: 10/23/2020 10:47:19 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryWarehouseMaster(
+	WarehouseNum int NOT NULL,
+	ItemNum char(8) NOT NULL FOREIGN KEY REFERENCES InventoryMaster(ItemNum),  
+	OnHandQty decimal(9, 2) NOT NULL,
+	QtyBookedToGL decimal(9, 2) NOT NULL,
+	DateLastActivity date NOT NULL,
+	WHAisle char(2) NOT NULL,
+	WHSection char(2) NOT NULL,
+	WHRow char(2) NOT NULL,
+	WHContainer char(2) NOT NULL,
+	PRIMARY KEY(WarehouseNum, ItemNum)
+);
+
+/****** Object:  Table [dbo].[InventoryTruckMaster]    Script Date: 10/24/2020 3:27:28 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryTruckMaster(
+	TruckNum int NOT NULL,
+	ItemNum char(8) NOT NULL FOREIGN KEY REFERENCES InventoryMaster(ItemNum),
+	OnHandQty decimal(9, 2) NOT NULL,
+	QtyBookedToGL decimal(9, 2) NOT NULL,
+	DateLastActivity date NOT NULL,
+	PRIMARY KEY(TruckNum, ItemNum)
+);
+
+/****** Object:  Table [dbo].[InventoryPicklistMaster]    Script Date: 10/24/2020 2:56:03 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryPicklistMaster(
+	UniqueID int NOT NULL PRIMARY KEY,
+	ItemDate date NOT NULL,
+	ItemTime time NOT NULL,
+	EMP int NOT NULL,
+	ReqDate date NOT NULL,
+	EMPPicked int NOT NULL,
+	PickedDate date NOT NULL,
+	PickedTime time NOT NULL,
+	AcceptedDate date NOT NULL,
+	AcceptedTime time NOT NULL,
+	AcceptedByEMP int NOT NULL,
+	ItemStatus char(35) NOT NULL,
+	Details varchar(300) NOT NULL,
+);
+
+/****** Object:  Table [dbo].[PhysicalInventoryCorrections]    Script Date: 10/24/2020 2:59:20 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE PhysicalInventoryCorrections(
+	WarehouseNum int NOT NULL,
+	ItemNum char(8) NOT NULL,
+	Qty int NOT NULL,
+	PRIMARY KEY(WarehouseNum, ItemNum),
+	FOREIGN KEY(WarehouseNum, ItemNum) REFERENCES InventoryWarehouseMaster (WarehouseNum, ItemNum)
+);
+
+/****** Object:  Table [dbo].[InventoryWarehouseDescription]    Script Date: 10/24/2020 2:58:20 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryWarehouseDescription(
+	WarehouseNum int NOT NULL,
+	ItemNum char(8) NOT NULL,
+	GLNum int NOT NULL,
+	PRIMARY KEY(WarehouseNum), 
+	FOREIGN KEY(WarehouseNum, ItemNum) REFERENCES InventoryWarehouseMaster (WarehouseNum, ItemNum)
+);
+
+/****** Object:  Table [dbo].[InventoryTruckDescription]    Script Date: 10/24/2020 3:27:04 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryTruckDescription(
+	TruckNum int NOT NULL,
+	ItemNum char(8) NOT NULL,
+	GLNum int NOT NULL,
+	PRIMARY KEY(TruckNum),
+	FOREIGN KEY(TruckNum, ItemNum) REFERENCES InventoryTruckMaster (TruckNum, ItemNum)
+);
+
+
+/****** Object:  Table [dbo].[InventoryTransaction]    Script Date: 10/24/2020 2:58:02 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryTransaction(
+	UniqueID int NOT NULL FOREIGN KEY REFERENCES InventoryPicklistMaster(UniqueID),
+	ItemNum char(8) NOT NULL FOREIGN KEY REFERENCES InventoryMaster(ItemNum),
+	UserID char(10) NOT NULL,
+	ItemAction char(10) NOT NULL,
+	ItemDate date NOT NULL,
+	ItemTime time NOT NULL,
+	PrevOnHand int NOT NULL,
+	QtyOnHand int NOT NULL,
+	PrevQtyBookGL int NOT NULL,
+	QtyBookGL int NOT NULL,
+	PrevAvgCost decimal(9, 4) NOT NULL,
+	AvgCost decimal(9, 4) NOT NULL,
+	PRIMARY KEY(UniqueID)
+);
+
+
+/****** Object:  Table [dbo].[InventoryRecieptsTemporaryDetail]    Script Date: 10/24/2020 2:56:46 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryRecieptsTemporaryDetail(
+	SeqNum int NOT NULL,
+	ReqNum int NOT NULL,
+	WONum int NOT NULL,
+	ExtCost decimal(9, 2) NOT NULL,
+	POReqNum int NOT NULL,
+	POLineNum int NOT NULL,
+	ItemNum char(8) NOT NULL,
+	POQty decimal(9, 2) NOT NULL,
+	RecievedQty decimal(9, 2) NOT NULL,
+	WarehouseNum int NOT NULL,
+	ReceiptDate date NOT NULL,
+	ReceiptEMP int NOT NULL,
+	PRIMARY KEY(SeqNum),
+	FOREIGN KEY(WarehouseNum, ItemNum) REFERENCES InventoryWarehouseMaster (WarehouseNum, ItemNum)
+);
+
+
+/****** Object:  Table [dbo].[InventorySerializedItem]    Script Date: 10/24/2020 3:02:56 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventorySerializedItem(
+	SerialNum int NOT NULL,
+	AverageCost decimal(9, 4) NOT NULL,
+	MonthUsage decimal(9, 2) NOT NULL,
+	ItemNum char(8) NOT NULL FOREIGN KEY REFERENCES InventoryMaster(ItemNum),
+	PRIMARY KEY(SerialNum, ItemNum)
+);
+
+/****** Object:  Table [dbo].[InventoryRecieptsForFleetDetail]    Script Date: 10/24/2020 2:56:22 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryRecieptsForFleetDetail(
+	RecieptDate date NOT NULL,
+	ItemNum char(8) NOT NULL FOREIGN KEY REFERENCES InventoryMaster(ItemNum),
+	RecievedQty decimal(10, 3) NOT NULL,
+	UnitCost decimal(11, 4) NOT NULL
+);
+
+/****** Object:  Table [dbo].[InventoryPicklistDetaill]    Script Date: 10/24/2020 2:55:31 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryPicklistDetail(
+	UniqueID int NOT NULL FOREIGN KEY REFERENCES InventoryPicklistMaster(UniqueID),
+	MasterID int NOT NULL,
+	GLNum char(10) NOT NULL,
+	WONumCharged int NOT NULL,
+	WONumItems int NOT NULL,
+	ItemNum char(8) NOT NULL,
+	Qty int NOT NULL,
+	PickedQty int NOT NULL,
+	PRIMARY KEY(UniqueID)
+);
+
+/****** Object:  Table [dbo].[InventoryPicklistCommon]    Script Date: 10/24/2020 2:55:00 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE InventoryPicklistCommon(
+	UniqueID int NOT NULL,
+	ItemDescription char(50) NOT NULL,
+	WOActivity int NOT NULL,
+	PRIMARY KEY(UniqueID)
+);

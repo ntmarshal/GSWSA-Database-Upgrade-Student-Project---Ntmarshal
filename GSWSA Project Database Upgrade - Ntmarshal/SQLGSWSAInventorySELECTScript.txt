@@ -1,0 +1,161 @@
+USE [GSWSA_Inventory_Project]
+GO
+
+SELECT [ItemNum]
+      ,[ItemDescription]
+      ,[GroupNum]
+      ,[ClassNum]
+      ,[AverageCost]
+      ,[LastTrueCost]
+      ,[EOQFormula]
+      ,[VendorNum]
+      ,[MinBalance]
+      ,[MaxBalance]
+      ,[StandardOrderQty]
+      ,[FiscalIssued]
+      ,[OnHandQty]
+      ,[OnOrderQty]
+      ,[QtyBookedGL]
+      ,[YTDUsage]
+      ,[YTDRecieved]
+      ,[YTDCost]
+      ,[PO]
+      ,[DateLastActivity]
+      ,[MonthUsage]
+  FROM [dbo].[InventoryMaster]
+
+GO
+
+SELECT [UniqueID]
+      ,[ItemDescription]
+      ,[WOActivity]
+  FROM [dbo].[InventoryPicklistCommon]
+
+GO
+
+SELECT [UniqueID]
+      ,[MasterID]
+      ,[GLNum]
+      ,[WONumCharged]
+      ,[WONumItems]
+      ,[ItemNum]
+      ,[Qty]
+      ,[PickedQty]
+  FROM [dbo].[InventoryPicklistDetail]
+
+GO
+
+SELECT [UniqueID]
+      ,[ItemDate]
+      ,[ItemTime]
+      ,[EMP]
+      ,[ReqDate]
+      ,[EMPPicked]
+      ,[PickedDate]
+      ,[PickedTime]
+      ,[AcceptedDate]
+      ,[AcceptedTime]
+      ,[AcceptedByEMP]
+      ,[ItemStatus]
+      ,[Details]
+  FROM [dbo].[InventoryPicklistMaster]
+
+GO
+
+SELECT [RecieptDate]
+      ,[ItemNum]
+      ,[RecievedQty]
+      ,[UnitCost]
+  FROM [dbo].[InventoryRecieptsForFleetDetail]
+
+GO
+
+SELECT [SeqNum]
+      ,[POReqNum]
+      ,[POLineNum]
+      ,[ItemNum]
+      ,[POQty]
+      ,[RecievedQty]
+      ,[WarehouseNum]
+      ,[ReceiptDate]
+      ,[ReceiptEMP]
+  FROM [dbo].[InventoryRecieptsTemporaryDetail]
+
+GO
+
+SELECT [SerialNum]
+      ,[AverageCost]
+      ,[MonthUsage]
+      ,[ItemNum]
+  FROM [dbo].[InventorySerializedItem]
+
+GO
+
+SELECT [UniqueID]
+      ,[ItemNum]
+      ,[UserID]
+      ,[ItemAction]
+      ,[ItemDate]
+      ,[ItemTime]
+      ,[PrevOnHand]
+      ,[QtyOnHand]
+      ,[PrevQtyBookGL]
+      ,[QtyBookGL]
+      ,[PrevAvgCost]
+      ,[AvgCost]
+  FROM [dbo].[InventoryTransaction]
+
+GO
+
+SELECT [TruckNum]
+      ,[ItemNum]
+      ,[GLNum]
+  FROM [dbo].[InventoryTruckDescription]
+
+GO
+
+SELECT [TruckNum]
+      ,[ItemNum]
+      ,[OnHandQty]
+      ,[QtyBookedToGL]
+      ,[DateLastActivity]
+  FROM [dbo].[InventoryTruckMaster]
+
+GO
+
+SELECT [WarehouseNum]
+      ,[ItemNum]
+      ,[GLNum]
+  FROM [dbo].[InventoryWarehouseDescription]
+
+GO
+
+SELECT [WarehouseNum]
+      ,[ItemNum]
+      ,[OnHandQty]
+      ,[QtyBookedToGL]
+      ,[DateLastActivity]
+      ,[WHAisle]
+      ,[WHSection]
+      ,[WHRow]
+      ,[WHContainer]
+  FROM [dbo].[InventoryWarehouseMaster]
+
+GO
+
+SELECT [WarehouseNum]
+      ,[ItemNum]
+      ,[Qty]
+  FROM [dbo].[PhysicalInventoryCorrections]
+
+GO
+
+/*Inventory Issuance Edit Report*/
+SELECT InventoryWarehouseMaster.WarehouseNum AS Warehouse#, InventoryRecieptsTemporaryDetail.SeqNum AS Seq#, InventoryMaster.ItemNum AS Item, InventoryMaster.ItemDescription AS ItemDescription, InventoryRecieptsTemporaryDetail.ReceiptDate AS ReceiptDate, InventoryRecieptsTemporaryDetail.WONum AS GL#, InventoryRecieptsTemporaryDetail.ReqNum AS ReqNum, InventoryRecieptsTemporaryDetail.RecievedQty AS IssuedQty, InventoryRecieptsTemporaryDetail.ExtCost AS ExtendedCost 
+
+	FROM InventoryWarehouseMaster
+	INNER JOIN InventoryMaster ON InventoryMaster.ItemNum=InventoryWarehouseMaster.ItemNum 
+	JOIN InventoryRecieptsTemporaryDetail ON InventoryRecieptsTemporaryDetail.WarehouseNum=InventoryWarehouseMaster.WarehouseNum
+	ORDER BY InventoryWarehouseMaster.WarehouseNum, InventoryRecieptsTemporaryDetail.SeqNum;
+
+/*Inventory Fleet 
